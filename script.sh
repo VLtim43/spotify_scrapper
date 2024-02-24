@@ -5,7 +5,7 @@ is_authenticated=0
 choose_option() {
     # Only show "auth" option if not authenticated
     if [ $is_authenticated -eq 0 ]; then
-        echo "auth"
+        echo "Auth"
     fi
 
     echo "Get Saved Songs"
@@ -22,7 +22,7 @@ handle_interrupt() {
 while true; do
     choice=$(choose_option | gum choose)
     case $choice in
-    "auth")
+    "Auth")
         bun run src/api/spotifyAuth.ts
         if [ $? -eq 0 ]; then
             echo "Authentication successful. Proceeding to the next options..."

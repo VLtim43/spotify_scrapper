@@ -15,7 +15,7 @@ if (process.env.TOKEN) {
 
 // For some reason, you can't get a given album's genres.
 // See: https://community.spotify.com/t5/Spotify-for-Developers/Getting-album-not-getting-genre/td-p/5093156
-// As a workaround, we get the artist's genres. It's not ideal, and sometimes it's empty, but it's a limitation we work with.
+// As a workaround, we get the artist's genres. It's not ideal, sometimes it's empty and may 429 the api, but it's a limitation we work with.
 export const getArtistGenres = async (artist_id: string): Promise<string[]> => {
   try {
     const {
@@ -25,6 +25,6 @@ export const getArtistGenres = async (artist_id: string): Promise<string[]> => {
   } catch (error) {
     console.error("Error retrieving artist genres:");
 
-    return []; // Return an empty array on error
+    return [];
   }
 };
