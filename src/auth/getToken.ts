@@ -1,4 +1,3 @@
-import { writeFile } from "fs";
 import { startAuthServer } from "./auth";
 
 // save on .env
@@ -18,10 +17,15 @@ export async function getToken(): Promise<string> {
     console.log("error file");
   }
 
-  envString += `\nSPOTIFY_TOKEN=${token}\n`;
-  writeFile(".env", token, (err) => {
-    if (err) throw err;
-    console.log("The file has been saved!");
-  });
+  const lines = envString
+    .split("\n")
+    .filter((line) => !line.startsWith("SPOTIFY_TOKEN=") && line.trim() !== "");
+
+  lines.push(`SPOTIFY_TOKEN=${token}`);
+
+  envString = lines.join("\n");
+
+  await Bun.write(".env", envString);
+  console.log("The file has been saved!");
   return token;
 }
