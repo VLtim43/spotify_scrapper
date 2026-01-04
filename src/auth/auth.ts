@@ -27,7 +27,7 @@ function getAuthUrl() {
     client_id: SPOTIFY_CLIENT_ID!,
     response_type: "code",
     redirect_uri: REDIRECT_URI,
-    scope: "user-top-read",
+    scope: "user-library-read",
     code_challenge_method: "S256",
     code_challenge: codeChallenge,
   });
