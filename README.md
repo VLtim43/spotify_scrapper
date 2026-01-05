@@ -4,16 +4,7 @@
 ![Bun](https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white)
 ![Spotify](https://img.shields.io/badge/Spotify-1DB954?style=for-the-badge&logo=spotify&logoColor=white)
 
-To install dependencies:
+spotify scrapper with bun and stuff
+auth with pkce
 
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.3.5. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+run index.ts -> it calls getToken() -> it handles the token in .env. if not auth yet calls startAuthServer() -> uses pkce to auth and stores the token

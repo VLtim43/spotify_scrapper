@@ -11,12 +11,6 @@ async function fetchWebApi(endpoint: string, method: string) {
   return await res.json();
 }
 
-type track = {
-  id: string;
-  name: string;
-  artists: Array<{ name: string }>;
-};
-
 async function getSavedTracks() {
   const response = await fetchWebApi("v1/me/tracks?limit=1", "GET");
   return response;
