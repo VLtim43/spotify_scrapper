@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import type { SpotifyTokenResponse } from "../types/types";
 
 const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const REDIRECT_URI =
@@ -18,10 +19,8 @@ function generateCodeChallenge(): {
   return { codeVerifier, codeChallenge };
 }
 
-function getAuthUrl() {
+function getAuthUrl(): { url: string; codeVerifier: string } {
   const { codeVerifier, codeChallenge } = generateCodeChallenge();
-
-  process.env.CODE_VERIFIER = codeVerifier;
 
   const params = new URLSearchParams({
     client_id: SPOTIFY_CLIENT_ID!,
@@ -32,16 +31,22 @@ function getAuthUrl() {
     code_challenge: codeChallenge,
   });
 
-  return `https://accounts.spotify.com/authorize?${params.toString()}`;
+  return {
+    url: `https://accounts.spotify.com/authorize?${params.toString()}`,
+    codeVerifier,
+  };
 }
 
-async function getAccessToken(code: string) {
+async function exchangeCode(
+  code: string,
+  codeVerifier: string
+): Promise<SpotifyTokenResponse> {
   const params = new URLSearchParams({
     client_id: SPOTIFY_CLIENT_ID!,
     grant_type: "authorization_code",
     code,
     redirect_uri: REDIRECT_URI,
-    code_verifier: process.env.CODE_VERIFIER!,
+    code_verifier: codeVerifier,
   });
 
   const response = await fetch("https://accounts.spotify.com/api/token", {
@@ -52,13 +57,41 @@ async function getAccessToken(code: string) {
     body: params.toString(),
   });
 
-  const data = (await response.json()) as { access_token: string };
-  return data.access_token;
+  const data: SpotifyTokenResponse =
+    (await response.json()) as SpotifyTokenResponse;
+  return data;
 }
 
-// auth server
-export async function startAuthServer(): Promise<string> {
+// Refresh access token using refresh token
+export async function refreshAccessToken(
+  refreshToken: string
+): Promise<SpotifyTokenResponse> {
+  const params = new URLSearchParams({
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+    client_id: process.env.SPOTIFY_CLIENT_ID!,
+  });
+
+  const response = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: params.toString(),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to refresh token");
+  }
+
+  const data = (await response.json()) as SpotifyTokenResponse;
+  return data;
+}
+
+export async function startAuthFlow(): Promise<SpotifyTokenResponse> {
   return new Promise((resolve, reject) => {
+    const { url: authUrl, codeVerifier } = getAuthUrl();
+
     const server = Bun.serve({
       port: 8888,
       hostname: "127.0.0.1",
@@ -77,7 +110,7 @@ export async function startAuthServer(): Promise<string> {
 
           if (code) {
             try {
-              const token = await getAccessToken(code);
+              const token = await exchangeCode(code, codeVerifier);
               console.log("\nAccess Token received!");
 
               server.stop();
@@ -101,7 +134,6 @@ export async function startAuthServer(): Promise<string> {
       },
     });
 
-    const authUrl = getAuthUrl();
     console.log("Opening browser for authorization...\n");
     console.log("If browser doesn't open, go to:", authUrl, "\n");
 

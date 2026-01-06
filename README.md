@@ -6,5 +6,3 @@
 
 spotify scrapper with bun and stuff
 auth with pkce
-
-run index.ts -> it calls getToken() -> it handles the token in .env. if not auth yet calls startAuthServer() -> uses pkce to auth and stores the token

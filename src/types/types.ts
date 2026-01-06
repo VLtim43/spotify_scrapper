@@ -1,3 +1,11 @@
+export type SpotifyTokenResponse = {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token: string; // Add this
+  scope: string;
+};
+
 export type Playlist = {
   name: string;
   id: string;
